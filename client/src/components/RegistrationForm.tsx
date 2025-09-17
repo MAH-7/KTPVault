@@ -4,10 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, XCircle, Edit3 } from 'lucide-react';
-import type { OcrResult, ManualInput } from '@shared/schema';
-import OCRCameraUpload from './OCRCameraUpload';
+import { CheckCircle, XCircle, Shield, User, CreditCard } from 'lucide-react';
 
 interface RegistrationFormProps {
   onSubmit: (data: { icNumber: string; fullName: string }) => void;
@@ -17,9 +14,7 @@ interface RegistrationFormProps {
 }
 
 export default function RegistrationForm({ onSubmit, isSubmitting, error, success }: RegistrationFormProps) {
-  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [manualData, setManualData] = useState({ icNumber: '', fullName: '' });
-  const [useManual, setUseManual] = useState(false);
+  const [formData, setFormData] = useState({ icNumber: '', fullName: '' });
   const [validationErrors, setValidationErrors] = useState<{ icNumber?: string; fullName?: string }>({});
 
   const validateForm = (data: { icNumber: string; fullName: string }) => {
@@ -41,11 +36,6 @@ export default function RegistrationForm({ onSubmit, isSubmitting, error, succes
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const formData = useManual || !ocrResult ? manualData : {
-      icNumber: ocrResult.icNumber,
-      fullName: ocrResult.fullName
-    };
-    
     const errors = validateForm(formData);
     setValidationErrors(errors);
     
@@ -54,20 +44,8 @@ export default function RegistrationForm({ onSubmit, isSubmitting, error, succes
     }
   };
 
-  const handleOCRComplete = (result: OcrResult | null) => {
-    setOcrResult(result);
-    if (result) {
-      // Pre-populate manual form with OCR results
-      setManualData({
-        icNumber: result.icNumber,
-        fullName: result.fullName
-      });
-      setValidationErrors({});
-    }
-  };
-
-  const handleManualInputChange = (field: 'icNumber' | 'fullName', value: string) => {
-    setManualData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: 'icNumber' | 'fullName', value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
     // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors(prev => ({ ...prev, [field]: undefined }));
@@ -75,137 +53,108 @@ export default function RegistrationForm({ onSubmit, isSubmitting, error, succes
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Success/Error Messages */}
+    <div className="max-w-3xl mx-auto space-y-8">
+      {/* Large Success Message */}
       {success && (
-        <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950" data-testid="alert-success">
-          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-green-800 dark:text-green-200">
-            ✅ {success}
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {error && (
-        <Alert variant="destructive" data-testid="alert-error">
-          <XCircle className="h-4 w-4" />
-          <AlertDescription>
-            ❌ {error}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* OCR Camera Upload */}
-      {!useManual && (
-        <OCRCameraUpload 
-          onOCRComplete={handleOCRComplete} 
-          disabled={isSubmitting}
-        />
-      )}
-      
-      {/* OCR Results Display */}
-      {ocrResult && !useManual && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-green-700 dark:text-green-300" data-testid="text-ocr-results">
-                  ✅ OCR Results Detected
-                </h3>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setUseManual(true)}
-                  data-testid="button-edit-ocr"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">IC Number</Label>
-                  <div className="mt-1 p-2 bg-muted rounded-md font-mono" data-testid="text-ocr-ic">
-                    {ocrResult.icNumber}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Full Name</Label>
-                  <div className="mt-1 p-2 bg-muted rounded-md" data-testid="text-ocr-name">
-                    {ocrResult.fullName}
-                  </div>
-                </div>
+        <div className="relative overflow-hidden rounded-2xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-green-800 dark:from-green-950 dark:to-emerald-950 p-8 shadow-xl" data-testid="alert-success">
+          <div className="relative z-10">
+            <div className="flex items-center justify-center mb-4">
+              <div className="rounded-full bg-green-100 dark:bg-green-900 p-4">
+                <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
+                Registration Successful!
+              </h3>
+              <p className="text-lg text-green-700 dark:text-green-300">
+                {success}
+              </p>
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-green-100/20 to-emerald-100/20 dark:from-green-900/20 dark:to-emerald-900/20"></div>
+        </div>
       )}
       
-      <Separator />
-      
-      {/* Manual Input Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Manual Input
-            {!useManual && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setUseManual(true)}
-                data-testid="button-use-manual"
-              >
-                Use Manual Input
-              </Button>
-            )}
+      {/* Large Error Message */}
+      {error && (
+        <div className="relative overflow-hidden rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:border-red-800 dark:from-red-950 dark:to-rose-950 p-8 shadow-xl" data-testid="alert-error">
+          <div className="relative z-10">
+            <div className="flex items-center justify-center mb-4">
+              <div className="rounded-full bg-red-100 dark:bg-red-900 p-4">
+                <XCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-2">
+                Registration Failed
+              </h3>
+              <p className="text-lg text-red-700 dark:text-red-300">
+                {error}
+              </p>
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-red-100/20 to-rose-100/20 dark:from-red-900/20 dark:to-rose-900/20"></div>
+        </div>
+      )}
+
+      {/* Modern Registration Form */}
+      <Card className="shadow-2xl border-0 bg-gradient-to-br from-card via-card to-card/95">
+        <CardHeader className="pb-6 pt-6">
+          <CardTitle className="text-xl font-bold text-center flex items-center justify-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            IC Registration
           </CardTitle>
+          <p className="text-center text-muted-foreground text-sm mt-1">Enter your Malaysian Identity Card details</p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="icNumber" className="text-sm font-medium">
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="icNumber" className="text-base font-semibold flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
                   IC Number
                 </Label>
                 <Input
                   id="icNumber"
                   type="text"
                   placeholder="123456789012"
-                  value={manualData.icNumber}
-                  onChange={(e) => handleManualInputChange('icNumber', e.target.value)}
-                  className={validationErrors.icNumber ? 'border-red-500' : ''}
+                  value={formData.icNumber}
+                  onChange={(e) => handleInputChange('icNumber', e.target.value)}
+                  className={`h-14 text-lg font-mono ${validationErrors.icNumber ? 'border-red-500 focus-visible:ring-red-500' : 'focus-visible:ring-primary'}`}
                   maxLength={12}
                   data-testid="input-ic-number"
                 />
                 {validationErrors.icNumber && (
-                  <p className="text-sm text-red-500 mt-1" data-testid="error-ic-number">
+                  <p className="text-sm text-red-500 mt-2 font-medium" data-testid="error-ic-number">
                     {validationErrors.icNumber}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Enter 12 digits without spaces or dashes
                 </p>
               </div>
               
-              <div>
-                <Label htmlFor="fullName" className="text-sm font-medium">
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-base font-semibold flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" />
                   Full Name
                 </Label>
                 <Input
                   id="fullName"
                   type="text"
                   placeholder="AHMAD BIN ALI"
-                  value={manualData.fullName}
-                  onChange={(e) => handleManualInputChange('fullName', e.target.value.toUpperCase())}
-                  className={validationErrors.fullName ? 'border-red-500' : ''}
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value.toUpperCase())}
+                  className={`h-14 text-lg ${validationErrors.fullName ? 'border-red-500 focus-visible:ring-red-500' : 'focus-visible:ring-primary'}`}
                   data-testid="input-full-name"
                 />
                 {validationErrors.fullName && (
-                  <p className="text-sm text-red-500 mt-1" data-testid="error-full-name">
+                  <p className="text-sm text-red-500 mt-2 font-medium" data-testid="error-full-name">
                     {validationErrors.fullName}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Enter your full name as shown on IC
                 </p>
               </div>
@@ -213,26 +162,36 @@ export default function RegistrationForm({ onSubmit, isSubmitting, error, succes
             
             <Button 
               type="submit" 
-              className="w-full" 
-              disabled={isSubmitting || (!useManual && !ocrResult && !manualData.icNumber)}
+              className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]" 
+              disabled={isSubmitting}
               data-testid="button-register"
             >
-              {isSubmitting ? 'Registering...' : 'Register'}
+              {isSubmitting ? (
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  Registering...
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-6 w-6" />
+                  Register Now
+                </div>
+              )}
             </Button>
           </form>
         </CardContent>
       </Card>
       
-      {/* Security Notice */}
-      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+      {/* Enhanced Security Notice */}
+      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800 shadow-lg">
         <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="text-blue-600 dark:text-blue-400">
-              🔒
+          <div className="flex items-start gap-4">
+            <div className="rounded-full bg-blue-100 dark:bg-blue-900 p-3">
+              <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="text-sm text-blue-800 dark:text-blue-200">
-              <p className="font-medium mb-1">Privacy & Security</p>
-              <p>
+            <div className="text-blue-800 dark:text-blue-200">
+              <p className="font-bold text-lg mb-2">Privacy & Security</p>
+              <p className="text-base leading-relaxed">
                 Your IC number will be securely hashed before storage. 
                 The original IC number is never stored in our database.
               </p>

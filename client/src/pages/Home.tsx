@@ -46,7 +46,7 @@ export default function Home() {
             IC Registration
           </h1>
           <p className="text-muted-foreground">
-            Register your Malaysian Identity Card securely with OCR support
+            Register your Malaysian Identity Card securely
           </p>
         </div>
         
