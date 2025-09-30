@@ -7,6 +7,28 @@ import { supabase } from "./supabase";
 import { requireAdmin } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint to verify database connection
+  app.get('/api/health', async (req, res) => {
+    try {
+      // Try to query the database
+      const users = await storage.getAllIcUsers();
+      res.json({ 
+        status: 'ok', 
+        database: 'connected',
+        userCount: users.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Health check failed:', error);
+      res.status(500).json({ 
+        status: 'error',
+        database: 'disconnected',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // IC Registration endpoint
   app.post('/api/register', async (req, res) => {
     try {
@@ -54,7 +76,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      res.status(500).json({ 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'production' ? undefined : (error as Error).message
+      });
     }
   });
   
