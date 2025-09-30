@@ -7,13 +7,11 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Create the postgres client with SSL configuration for production
-// Supabase requires SSL and uses connection pooling
 const client = postgres(process.env.DATABASE_URL, {
   ssl: process.env.NODE_ENV === "production" ? "require" : false,
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
-  prepare: false, // Required for Supabase connection pooler (port 6543)
 });
 
 // Create the drizzle instance
