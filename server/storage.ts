@@ -1,7 +1,7 @@
 import { type IcUser, type InsertIcUser } from "@shared/schema";
 import { db } from './db';
 import { usersIc } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export interface IStorage {
@@ -24,7 +24,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllIcUsers(): Promise<IcUser[]> {
-    return await db.select().from(usersIc).orderBy(usersIc.createdAt);
+    return await db.select().from(usersIc).orderBy(desc(usersIc.createdAt));
   }
 
   async searchIcUsers(searchTerm: string): Promise<IcUser[]> {
@@ -32,7 +32,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(usersIc)
       .where(eq(usersIc.fullName, searchTerm))
-      .orderBy(usersIc.createdAt);
+      .orderBy(desc(usersIc.createdAt));
     return result;
   }
 }
