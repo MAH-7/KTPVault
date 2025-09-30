@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage, hashIcNumber } from "./storage";
+import { storage, hashIcNumber } from "./storage-supabase";
 import { insertIcUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { supabase } from "./supabase";
